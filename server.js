@@ -37,8 +37,6 @@ app.post('/api/upload', multipleUpload, function (req, res) {
 
   AWS.config.update({ region: 'us-east-1' });
 
-  AWS.config.loadFromPath('./config.json');
-
   let s3 = new aws.S3({
     apiVersion: '2006-03-01',
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
