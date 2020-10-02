@@ -5,6 +5,7 @@ var app = express();
 var port = process.env.PORT || 5000;
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(cors());
+var fs = require("fs")
 var express = require('express');
 var router = express.Router();
 var multer = require('multer');
@@ -45,9 +46,21 @@ app.post('/api/upload', multipleUpload, function (req, res) {
 
   var ResponseData = [];
 
+
+  /// can get rid of this
+
+  // fs.writeFile('logFile.txt', req.headers['timestamp'], "utf8", function (err) {
+  //   if (err) return console.log(err);
+
+  // });
+
+  // to here
+
+
   let userName = req.headers['username'];
   let date = req.headers['timestamp'];
   let primaryVar;
+  console.log(typeof (file))
   file.map((item) => {
     console.log("mapping files")
     console.log(item)
@@ -76,6 +89,34 @@ app.post('/api/upload', multipleUpload, function (req, res) {
     });
   });
 
+  /// can get rid of this
+  // let d;
+  // fs.readFile('logFile.txt', (err, data) => {
+  //   if (err) throw err;
+  //   console.log(data);
+  //   d = data;
+  // });
+
+  // var params = {
+  //   Bucket: "filter-user-upload-bucket",
+  //   Region: 'us-east-1',
+  //   Key: userName + "/" + date + "/" + "preprocess" + "/log.txt",
+  //   Body: d
+  // };
+
+
+
+  // s3.upload(params, function (err, data) {
+  //   if (err) {
+  //     error = true;
+  //     res.json({ "error": true, "Message": err });
+  //     console.log(err)
+  //   }
+
+  // }
+  // );
+
+  // to here
 
 });
 module.exports = router;
