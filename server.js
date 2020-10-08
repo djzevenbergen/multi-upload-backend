@@ -21,9 +21,9 @@ var upload = multer({ storage: storage }).single('file');
 // Start the server
 app.listen(port, function (err) {
   if (err) {
-    console.log(" DB Error: ", err);
+
   } else {
-    console.log('Port connected', port);
+
   }
 });
 
@@ -55,7 +55,7 @@ app.post('/api/upload', multipleUpload, function (req, res) {
 
     content = fs.readFileSync('logFile.txt')
 
-    console.log(content)
+
     return callBack(content);
   }
 
@@ -72,22 +72,19 @@ app.post('/api/upload', multipleUpload, function (req, res) {
 
     Object.keys(file).forEach((f) => {
       count++;
-      console.log(f)
-      console.log(file[f])
+
+
     })
 
     file[count] = logFileObject;
 
     file.map((item) => {
-      console.log("mapping files")
-      console.log(item)
+
       if (item['primary']) {
         primaryVar = "primary/"
       } else {
         primaryVar = ''
       }
-
-      console.log(item.mimetype == "text/plain" ? "logs/" + userName + "_" + date + "_" + "log.txt" : userName + "/" + date + "/" + "preprocess" + "/" + primaryVar + item.originalname)
 
       var params = {
         Bucket: "filter-user-upload-bucket",
@@ -99,7 +96,7 @@ app.post('/api/upload', multipleUpload, function (req, res) {
         if (err) {
           error = true;
           res.json({ "error": true, "Message": err });
-          console.log(err)
+
         } else {
           ResponseData.push(data);
           if (ResponseData.length == file.length) {
@@ -110,7 +107,7 @@ app.post('/api/upload', multipleUpload, function (req, res) {
     });
   }
 
-  let data = "timestamp," + time + ",username," + userName;
+  let data = "timestamp," + date + ",username," + userName;
   logBuffer = getThisFile(data, doTheUpload)
 }
 
