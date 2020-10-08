@@ -27,98 +27,94 @@ app.listen(port, function (err) {
   }
 });
 
-// const profile = require('./model/s3Upload');
+let time;
+let userName;
+let logBuffer;
+
+AWS.config.update({ region: 'us-east-1' });
+
+let s3 = new AWS.S3({
+  apiVersion: '2006-03-01',
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+});
+
+var ResponseData = [];
+
 app.post('/api/upload', multipleUpload, function (req, res) {
   let error = false;
   const file = req.files;
-
-  Object.values(file).forEach((f) => {
-    console.log(f)
-  })
-
-  AWS.config.update({ region: 'us-east-1' });
-
-  let s3 = new AWS.S3({
-    apiVersion: '2006-03-01',
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-  });
-
-  var ResponseData = [];
-
-
-  /// can get rid of this
-
-  // fs.writeFile('logFile.txt', req.headers['timestamp'], "utf8", function (err) {
-  //   if (err) return console.log(err);
-
-  // });
-
-  // to here
-
-
   let userName = req.headers['username'];
   let date = req.headers['timestamp'];
-  let primaryVar;
-  console.log(typeof (file))
-  file.map((item) => {
-    console.log("mapping files")
-    console.log(item)
-    if (item['primary']) {
-      primaryVar = "primary/"
-    } else {
-      primaryVar = ''
-    }
-    var params = {
-      Bucket: "filter-user-upload-bucket",
-      Region: 'us-east-1',
-      Key: userName + "/" + date + "/" + "preprocess" + "/" + primaryVar + item.originalname,
-      Body: item.buffer
-    };
-    s3.upload(params, function (err, data) {
-      if (err) {
-        error = true;
-        res.json({ "error": true, "Message": err });
-        console.log(err)
-      } else {
-        ResponseData.push(data);
-        if (ResponseData.length == file.length) {
-          res.json({ "error": false, "Message": "File Uploaded Successfully", Data: ResponseData });
-        }
-      }
+  const getThisFile = (data, callBack) => {
+    let content;
+
+    fs.writeFileSync('logFile.txt', data, function (err) {
+      // Deal with possible error here.
     });
-  });
 
-  /// can get rid of this
-  // let d;
-  // fs.readFile('logFile.txt', (err, data) => {
-  //   if (err) throw err;
-  //   console.log(data);
-  //   d = data;
-  // });
+    content = fs.readFileSync('logFile.txt')
 
-  // var params = {
-  //   Bucket: "filter-user-upload-bucket",
-  //   Region: 'us-east-1',
-  //   Key: userName + "/" + date + "/" + "preprocess" + "/log.txt",
-  //   Body: d
-  // };
+    console.log(content)
+    return callBack(content);
+  }
 
+  const doTheUpload = (fileBuffer) => {
+    let count = 0
+    const logFileObject = {
+      fieldname: 'file',
+      originalname: 'log.txt',
+      encoding: '7bit',
+      mimetype: 'text/plain',
+      buffer: fileBuffer,
+      size: 246862
+    }
 
+    Object.keys(file).forEach((f) => {
+      count++;
+      console.log(f)
+      console.log(file[f])
+    })
 
-  // s3.upload(params, function (err, data) {
-  //   if (err) {
-  //     error = true;
-  //     res.json({ "error": true, "Message": err });
-  //     console.log(err)
-  //   }
+    file[count] = logFileObject;
 
-  // }
-  // );
+    file.map((item) => {
+      console.log("mapping files")
+      console.log(item)
+      if (item['primary']) {
+        primaryVar = "primary/"
+      } else {
+        primaryVar = ''
+      }
 
-  // to here
+      console.log(item.mimetype == "text/plain" ? "logs/" + userName + "_" + date + "_" + "log.txt" : userName + "/" + date + "/" + "preprocess" + "/" + primaryVar + item.originalname)
 
-});
+      var params = {
+        Bucket: "filter-user-upload-bucket",
+        Region: 'us-east-1',
+        Key: item.mimetype == "text/plain" ? "logs/" + userName + "_" + date + "_" + "log.txt" : userName + "/" + date + "/" + "preprocess" + "/" + primaryVar + item.originalname,
+        Body: item.buffer
+      };
+      s3.upload(params, function (err, data) {
+        if (err) {
+          error = true;
+          res.json({ "error": true, "Message": err });
+          console.log(err)
+        } else {
+          ResponseData.push(data);
+          if (ResponseData.length == file.length) {
+            res.json({ "error": false, "Message": "File Uploaded Successfully", Data: ResponseData });
+          }
+        }
+      });
+    });
+  }
+
+  let data = "timestamp," + time + ",username," + userName;
+  logBuffer = getThisFile(data, doTheUpload)
+}
+
+)
 module.exports = router;
 
 app.get("/", (req, res) => {
