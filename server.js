@@ -20,10 +20,10 @@ var upload = multer({ storage: storage }).single('file');
 
 
 
-const whitelist = ['http://localhost:3000', 'https://optml-image.web.app', 'https://optml-image.web.app/upload']
+const okHosts = ['http://localhost:3000', 'https://optml-image.web.app', 'https://optml-image.web.app/upload']
 const corsOptions = {
   origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
+    if (okHosts.indexOf(origin) !== -1) {
       callback(null, true)
     } else {
       callback(new Error('Not allowed by CORS'))
@@ -52,7 +52,7 @@ let s3 = new AWS.S3({
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
 });
 
-var ResponseData = [];
+var ResponseData;
 
 
 app.post('/api/upload', multipleUpload, function (req, res) {
@@ -74,6 +74,7 @@ app.post('/api/upload', multipleUpload, function (req, res) {
   }
 
   const doTheUpload = (fileBuffer) => {
+    ResponseData = []
     let count = 0
     const logFileObject = {
       fieldname: 'file',
@@ -114,9 +115,11 @@ app.post('/api/upload', multipleUpload, function (req, res) {
         } else {
           ResponseData.push(data);
           console.log(data)
+          console.log(ResponseData.length + " should equal " + file.length)
           if (ResponseData.length == file.length) {
             console.log(ResponseData)
             res.json({ "error": false, "Message": "File Uploaded Successfully", Data: ResponseData });
+
           } else {
             console.log("hmm")
           }
