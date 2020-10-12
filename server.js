@@ -91,7 +91,7 @@ app.post('/api/upload', multipleUpload, function (req, res) {
     file[count] = logFileObject;
 
     file.map((item) => {
-      console.log(item)
+      // console.log(item)
 
       if (item['primary']) {
         primaryVar = "primary/"
@@ -113,6 +113,7 @@ app.post('/api/upload', multipleUpload, function (req, res) {
 
         } else {
           ResponseData.push(data);
+          console.log(data)
           if (ResponseData.length == file.length) {
             console.log(ResponseData)
             res.json({ "error": false, "Message": "File Uploaded Successfully", Data: ResponseData });
