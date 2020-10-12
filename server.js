@@ -20,7 +20,7 @@ var upload = multer({ storage: storage }).single('file');
 
 
 
-const whitelist = ['http://localhost:3000', 'https://optml-image.web.app']
+const whitelist = ['http://localhost:3000', 'https://optml-image.web.app', 'https://optml-image.web.app/upload']
 const corsOptions = {
   origin: function (origin, callback) {
     if (whitelist.indexOf(origin) !== -1) {
