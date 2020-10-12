@@ -4,7 +4,7 @@ const cors = require('cors');
 var app = express();
 var port = process.env.PORT || 5000;
 app.use(bodyParser.urlencoded({ extended: true }))
-app.use(cors());
+
 var fs = require("fs")
 var express = require('express');
 var router = express.Router();
@@ -18,6 +18,19 @@ var storage = multer.memoryStorage({
 var multipleUpload = multer({ storage: storage }).array('file');
 var upload = multer({ storage: storage }).single('file');
 
+
+
+const whitelist = ['http://localhost:3000', 'https://optml-image.web.app']
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
+}
+app.use(cors(corsOptions));
 // Start the server
 app.listen(port, function (err) {
   if (err) {
@@ -40,6 +53,7 @@ let s3 = new AWS.S3({
 });
 
 var ResponseData = [];
+
 
 app.post('/api/upload', multipleUpload, function (req, res) {
   let error = false;
@@ -72,13 +86,12 @@ app.post('/api/upload', multipleUpload, function (req, res) {
 
     Object.keys(file).forEach((f) => {
       count++;
-
-
     })
 
     file[count] = logFileObject;
 
     file.map((item) => {
+      console.log(item)
 
       if (item['primary']) {
         primaryVar = "primary/"
@@ -95,12 +108,16 @@ app.post('/api/upload', multipleUpload, function (req, res) {
       s3.upload(params, function (err, data) {
         if (err) {
           error = true;
+          console.log(err)
           res.json({ "error": true, "Message": err });
 
         } else {
           ResponseData.push(data);
           if (ResponseData.length == file.length) {
+            console.log(ResponseData)
             res.json({ "error": false, "Message": "File Uploaded Successfully", Data: ResponseData });
+          } else {
+            console.log("hmm")
           }
         }
       });
